@@ -1,0 +1,959 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>High performance Ruby TCP services</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme.css" id="theme">
+		<link rel="stylesheet" href="css/custom.css" id="theme">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+          <h1>
+            High performance
+            <br />
+            <span style="color: #BC2C40">Ruby</span>
+            <br />
+            TCP services
+          </h1>
+        </section>
+
+        <section>
+          <h1>
+            привет, товарищ!
+          </h1>
+        </section>
+
+        <section>
+          <h2>$ whoami --code</h2>
+
+          <p>
+            <a href="http://mensfeld.pl">Maciej Mensfeld</a>
+          </p>
+
+          <p>
+            <ul style="list-style: none; text-align: center;">
+              <li>
+                Software Engineer / Architect
+              </li>
+              <li>
+                <a href="https://github.com/karafka/karafka">Karafka</a> framework creator
+              </li>
+              <li>
+                OSS contributor (~12 years with Ruby)
+              </li>
+            </ul>
+          </p>
+        </section>
+
+        <section>
+          <h2>$ whoami --work</h2>
+
+          <img src="img/castle.png" style="border: none; box-shadow: 0 0 0 0 #fff; background: none; width: 50%"/>
+
+          <h4>
+            Castle detects and mitigates account takeovers in web and mobile apps
+          </h4>
+        </section>
+
+        <section>
+          <h2>$ whoami --moscow</h2>
+
+          <p>
+            <ul>
+              <li>1st time in Russia</li>
+              <li>Moscow is awesome!</li>
+            </ul>
+          </p>
+
+          <img src="img/moscow.jpg" style="width: 60%"/>
+        </section>
+
+        <section>
+          <h3>M: Solnic, is it a dating scam?</h3>
+          <h3>S: Go!</h3>
+
+          <img src="img/solnic.jpg" style="width: 30%"/>
+        </section>
+
+        <section>
+          <img src="img/krug.png" style="border: none; box-shadow: 0 0 0 0 #fff; width: 80%; background: none; width: 50%"/>
+
+          <h5 style="display: none">Kraków Ruby Users Group organizer</h5>
+
+          <ul>
+            <li>One of the biggest Ruby communities in Europe</li>
+            <li>Over <span style="color: #BC2C40">1200</span> members</li>
+            <li><span style="color: #BC2C40">60-150</span> attendees per event</li>
+            <li>One meeting per month with <span style="color: #BC2C40">2-3</span> tech talks</li>
+            <li><span style="color: #BC2C40">21</span> sponsors</li>
+          </ul>
+        </section>
+
+        <section>
+          <img src="img/krug.png" style="border: none; box-shadow: 0 0 0 0 #fff; width: 80%; background: none; width: 20%"/>
+          <br/>
+          <img src="img/krug.jpg" style="width: 80%"/>
+        </section>
+
+
+        <section>
+          <img src="img/karafka.png" style="border: none; box-shadow: 0 0 0 0 #fff; background: none; width: 100%"/>
+          <h3>
+            github.com/karafka/<span style="color: #BC2C40">karafka</span>
+          </h3>
+        </section>
+
+        <section>
+          <img src="img/karafka.png" style="border: none; box-shadow: 0 0 0 0 #fff; background: none; width: 100%"/>
+          <h2>Workshops tomorrow</h2>
+        </section>
+
+
+				<section>
+					<h1>$ whoami --contact</h1>
+
+					<p>
+            github: <a href="http://github.com/mensfeld">github.com/mensfeld</a> <br>
+            www: <a href="http://mensfeld.pl">mensfeld.pl</a> <br>
+            twitter: <a href="http://twitter.com/maciejmensfeld">@maciejmensfeld</a> <br>
+            e-mail: <a href="mailto:maciej@mensfeld.pl">maciej@mensfeld.pl</a>
+          </p>
+				</section>
+
+        <section>
+          <h1>Talk to me about:</h1>
+
+          <p>
+            Karafka, Kafka, Ruby, System Architecture, High throughput data processing,
+            dry-rb, Trailblazer, TCP, Ruby on Rails or <span style="color: #BC2C40">anything</span> else TBH :)
+          </p>
+        </section>
+
+        <section>
+          <h1>Please notify me if...</h1>
+
+          <ul>
+            <li>
+              I speak 2 fast
+            </li>
+            <li>
+              I should repeat anything
+            </li>
+            <li>
+              I should explain something better
+            </li>
+            <li>
+              You have any questions
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>
+            What do I hope to leave you with?
+          </h2>
+
+          <p>
+            Non-standard solutions can be good! Ruby has a lot more to offer than just the "Rails ecosystem".
+          </p>
+
+          <small style="display: none;">
+            HTTP is a great protocol. It's well designed, well known, extremely popular and supported by multiple libraries.
+            But it's not the end of the world.
+            <br />
+            <br />
+            This session should help you understand that and should provide a gentle intro to TCP itself and how it can be used in Ruby based applications to obtain sub-milisecond performance.
+          </small>
+        </section>
+
+        <section>
+          <h1>Agenda</h2>
+
+          <ul>
+            <li>Problem characteristics</li>
+            <li>Internal SLAs</li>
+            <li>dRuby?</li>
+            <li>Sync services</li>
+            <li>Async services</li>
+          </ul>
+        </section>
+
+        <section>
+          <h1><span style="color: #BC2C40">Warning!</span></h1>
+
+          <h2>Simplifications ahead</h2>
+
+          <h3>It's a huge topic, so I made some simplifications down the road.</h3>
+
+        </section>
+
+        <section>
+          <h1>Problem characteristics</h1>
+        </section>
+
+        <section>
+          <img src="img/castle.png" style="border: none; box-shadow: 0 0 0 0 #fff; background: none; width: 70%"/>
+
+          <h4>
+            Castle detects and mitigates account takeovers in web and mobile apps
+          </h4>
+        </section>
+
+        <section>
+          <h3>Password hacking is easy in 2018</h3>
+
+          <ul>
+            <li>sentry-mba.com, 2captcha.com, pastebin.com, ...</li>
+            <li><span style="color: #BC2C40">73%</span> passwords are used on multiple sites</li>
+            <li><span style="color: #BC2C40">3.1B</span> credentials leaked only in 2016</li>
+          </ul>
+        </section>
+
+        <section>
+          <img src="img/castle-work.png" />
+        </section>
+
+        <section>
+          <img src="img/castle.png" style="border: none; box-shadow: 0 0 0 0 #fff; background: none; width: 35%"/>
+
+          <p>
+            <ul>
+              <li>More than <span style="color: #BC2C40">100 mln events</span> per day</li>
+              <li>Over <span style="color: #BC2C40">21 mln</span> active daily users</li>
+              <li>Over <span style="color: #BC2C40">50 mln</span>active user overall</li>
+              <li>Over <span style="color: #BC2C40">2.5 mln</span> failed logins daily</li>
+            </ul>
+          </p>
+        </section>
+
+        <section>
+          <h2>
+            And everything would we awesome, if all of it could be <span style="color: #BC2C40">asynchronous</span>.
+          </h2>
+
+          <h4 class="fragment">(and it can, but let's assume it's a no-no)</h4>
+        </section>
+
+        <section>
+          <h3>More about that in Antons talk</h3>
+
+          <img src="img/anton.png" style="border: 10px; width: 100%"/>
+        </section>
+
+        <section>
+          <h2>
+            There are always some customer facing <span style="color: #BC2C40">endpoints</span>,
+            that must remain <span style="color: #BC2C40">synchronous</span>.
+          </h2>
+        </section>
+
+        <section>
+          <h2>
+            Sometimes even internal services need to remain <span style="color: #BC2C40">synchronous</span> due to the processing flow.
+          </h2>
+
+          <small class="fragment">(do they?)</small>
+        </section>
+
+        <section>
+          <h2>This is exactly the case we will tackle today.</h2>
+        </section>
+
+        <section>
+          <h3>
+            Castle Leaked Credentials
+          </h3>
+
+          <ul>
+            <li>Over <span style="color: #BC2C40">2 billion</span> of records that need to be accessible in a  <span style="color: #BC2C40">synchronous</span> mode</li>
+            <li>It's a crutial but <span style="color: #BC2C40">not</span> mission critical component, so if it fails, it should not impact the rest of the system</li>
+            <li>It should be efficient enough to handle a lot of traffic cheaply</li>
+            <li>The less infrastructure it requires the better</li>
+            <li>Should allow to set internal SLA policies depending on the usecase and the client</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>How much is <span style="color: #BC2C40">100 mln</span> requests a day?</h2>
+
+          <ul>
+            <li>~ <span style="color: #BC2C40">4,2 mln rq</span> per hour</li>
+            <li>~ <span style="color: #BC2C40">70 k rq</span> per miIdenute</li>
+            <li>~ <span style="color: #BC2C40">1200 rq</span> per second</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>So, what do we actually need?</h3>
+
+          <p>A service, that will:</p>
+
+          <ul>
+            <li>Receive an email and return statistics on it's presence in e-mail leaks</li>
+            <li><span style="color: #BC2C40">Always</span> respond within a certain timeframe</li>
+            <li>Ideally handle all the traffic using a <span style="color: #BC2C40">single</span> process + some backup</li>
+            <li>Will provide the <span style="color: #BC2C40">versioning</span> information</li>
+          </ul>
+        </section>
+
+        <section>
+          <h1>HTTP</h1>
+
+          <h2>GET /version</h2>
+          <h2>GET /leaks/:email</h2>
+        </section>
+
+        <section>
+          <h3>Why not HTTP?</h3>
+
+          <ul>
+            <li>Because it creates a <span style="color: #BC2C40">new</span> connection per each request</li>
+            <li>Because it has a certain <span style="color: #BC2C40">overhead</span> in it due to it's specification</li>
+            <li>Because this is meant to be a micro-service with a single endpoint (plus versioning) with small pieces of data being transfered</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>SLA management</h3>
+
+          <blockquote>
+            SLAs are used as a method of measuring and potentially penalizing performance according to predetermined, mutually agreed upon standards
+          </blockquote>
+        </section>
+
+
+        <section>
+          <h3>SLA management</h3>
+
+          <ul>
+            <li>They work <span style="color: #BC2C40">great</span> also for internal services</li>
+            <li>"SLAized" approach requires team that understands timeouts, monitoring and infrastructure details</li>
+            <li>It needs to be supported and handled by <span style="color: #BC2C40">both</span> client and server side</li>
+            <li>Requires <span style="color: #BC2C40">awareness</span> of the importance of particular system components</li>
+          </ul>
+        </section>
+
+        <section>
+          <h1>d<span style="color: #BC2C40">Ruby?</span></h1>
+        </section>
+
+        <section>
+          <blockquote>
+            dRuby is a distributed object system for Ruby. It is written in pure Ruby and uses its own protocol. No add-in services are needed beyond those provided by the Ruby runtime, such as TCP sockets.
+          </blockquote>
+
+          <small>Quote source: <a href="https://ruby-doc.org/stdlib-2.5.1/libdoc/drb/rdoc/DRb.html">DRb</a></small>
+        </section>
+
+        <section>
+          <h3>d<span style="color: #BC2C40">Ruby</span></h3>
+          <img src="img/druby1.png"  style="border: none; box-shadow: 0 0 0 0 #fff; background: none; height: auto"/>
+        </section>
+
+        <section>
+          <h3>d<span style="color: #BC2C40">Ruby</span></h3>
+          <ul>
+            <li>Methods called upon this DRbObject instance are <span style="color: #BC2C40">forwarded</span> to its remote object.</li>
+            <li>Any object can receive calls over dRuby</li>
+            <li>Method calls made over dRuby behave largely the same as normal Ruby method calls made within a process</li>
+            <li>A dRuby reference to an object is not sufficient to prevent it being garbage collected!</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>d<span style="color: #BC2C40">Ruby</span></h3>
+          <ul>
+            <li>Works remotely</li>
+            <li>Allows distribution</li>
+            <li>Provides failover support (connection errors detection)</li>
+            <li>Pure Ruby, Ruby only</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>d<span style="color: #BC2C40">Ruby</span> server</h3>
+
+<pre><code data-trim>
+require 'drb/drb'
+
+URI="druby://localhost:8787"
+
+class TimeServer
+  def current_time
+    Time.now
+  end
+end
+
+FRONT_OBJECT=TimeServer.new
+
+DRb.start_service(URI, FRONT_OBJECT)
+DRb.thread.join
+</code></pre>
+        </section>
+
+        <section>
+          <h3>d<span style="color: #BC2C40">Ruby</span> client</h3>
+
+<pre><code data-trim>
+require 'drb/drb'
+
+SERVER_URI="druby://localhost:8787"
+
+DRb.start_service
+
+timeserver = DRbObject.new_with_uri(SERVER_URI)
+puts timeserver.current_time
+</code></pre>
+        </section>
+
+        <section>
+          <h3>d<span style="color: #BC2C40">Ruby</span></h3>
+
+          <ul>
+            <li>It's <span style="color: #BC2C40">synchronous</span></li>
+            <li>Works</li>
+            <li>It's <span style="color: #BC2C40">super simple</span> even for more complex cases</li>
+            <li>Rapid development process</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>d<span style="color: #BC2C40">Ruby</span></h3>
+
+          <ul>
+            <li>Almost unknown outside of Japan</li>
+            <li>Brings a lot of uncertainties</li>
+            <li>It's not explicit</li>
+            <li>Lacks in the documentation</li>
+            <li>Lacks in any docs on the scalability and load balancing</li>
+            <li>Due to the marshalling process, it's a bit slow (> 10ms)</li>
+            <li>No timeout support, no control over the socket</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>d<span style="color: #BC2C40">Ruby</span></h3>
+
+          <img src="img/tweet.png" />
+        </section>
+
+        <section>
+          <h3>d<span style="color: #BC2C40">Ruby</span></h3>
+
+          <img src="img/dbook.jpg" />
+        </section>
+
+        <section>
+          <h1>Sync services</h1>
+
+          <h3>
+            So, if it's going to be a sync service, why not to put it into the codebase?
+          </h3>
+        </section>
+
+        <section>
+          <h3>Sync services</h3>
+
+          <ul>
+            <li>Isolation (easier deployment, management, replacement, scaling)</li>
+            <li>Extraction of concerns (context separation)</li>
+            <li>Memory usage efficiency</li>
+            <li>Possibility to reuse across the whole eco-system</li>
+            <li>Cross-app dependencies reduced only to the interface / API of the service</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Sync services</h3>
+
+          <h4>Challenges</h4>
+
+          <p>
+            Despite of it's nature (sync/async) be aware, that you will have to deal with following things:
+
+            <ul>
+              <li>Server timeouts</li>
+              <li>Clients timeouts</li>
+              <li>Partial data in the socket</li>
+              <li>Linux specific things like priorities, schedulers, etc</li>
+              <li>Handling new connections / disconnections</li>
+            </ul>
+          </p>
+        </section>
+
+        <section>
+          <h3>Sync services</h3>
+
+          <h4>Challenges</h4>
+
+          <p>
+            <ul>
+              <li>Low level frameworking (signals, hangs, exceptions)</li>
+              <li>Heavy instrumentation</li>
+              <li>Managing server limits and rejection support</li>
+              <li>Keep alive for LB (NLB in particular)</li>
+              <li>Poor Ruby docs on the particular TCP options</li>
+            </ul>
+          </p>
+        </section>
+
+
+        <section>
+          <h3>Sync services</h3>
+
+          <h4>Challenges</h4>
+
+          <ul>
+            <li>Network / recovery issues</li>
+            <li>Poor Ruby socket operations timeouts support</li>
+            <li>Protocol format</li>
+            <li>Ruby bugs (#14997)</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Sync services</h3>
+
+<pre><code data-trim>
+require 'socket'
+
+server = TCPServer.new 2000
+loop do
+  Thread.start(server.accept) do |client|
+    while ping = client.gets
+      client.puts ping
+    end
+  end
+end
+</code></pre>
+        </section>
+
+        <section>
+          <h3>Sync services</h3>
+
+<pre><code data-trim>
+require 'socket'
+
+server = TCPServer.new 2000
+loop do
+  Thread.start(server.accept) do |client|
+    while ping = client.gets
+      client.puts ping
+    end
+  end
+end
+</code></pre>
+        </section>
+
+        <section>
+          <h2>Design</h2>
+
+          <p>
+            Applications are meant to
+            <span style="color: #BC2C40">live</span>
+            within the VM.
+          </p>
+
+          <p>
+            They should be started, stopped, restarted and killed without interrupting the VM.
+          </p>
+
+          <p>
+            This means, that ideally it would be great to just provide a TCP "frame" to which you can bind any apps you want in any way.
+          </p>
+        </section>
+
+        <section>
+          <h3>Sync services</h3>
+          <img src="img/os.png"  style="border: none; box-shadow: 0 0 0 0 #fff; background: none; height: auto"/>
+        </section>
+
+        <section>
+          <h3>Sync services</h3>
+
+          <ul>
+            <li>Great when <span style="color: #BC2C40">less than 100</span> concurrent connections</li>
+            <li>Everything under your control (not only the client)</li>
+            <li>A lot of work to get things done in a stable way</li>
+            <li>Can easily incorporate any custom instrumentation / logging that you might need</li>
+            <li>Highly memory efficient</li>
+            <li>Most of the time <span style="color: #BC2C40">not worth</span> the effort</li>
+          </ul>
+        </section>
+
+        <section>
+          <h1>Sync services</h1>
+
+          <h2><span style="color: #BC2C40">EventMachine</span></h2>
+
+          <h3>You don't have to do things manually</h3>
+        </section>
+
+        <section>
+          <h3>EventMachine</h3>
+
+          <blockquote>
+            EventMachine is an event-driven I/O and lightweight concurrency library for Ruby. It provides event-driven I/O using the Reactor pattern, much like JBoss Netty, Apache MINA, Python's Twisted, Node.js, libevent and libev.
+          </blockquote>
+        </section>
+
+        <section>
+          <h3>EventMachine</h3>
+
+          <img src="img/reactor.png"  style="border: 2px; height: auto"/>
+
+          <small>Image source: <a href="https://www.celum.com/en/blog/technology/the-reactor-pattern-and-non-blocking-io">The reactor pattern and non-blocking IO</a></small>
+        </section>
+
+        <section>
+          <h3>EventMachine</h3>
+
+          <ul>
+            <li>Battle tested for years</li>
+            <li>Suited for systems with <span style="color: #BC2C40">thousands</span> of connections</li>
+            <li>Includes support for <span style="color: #BC2C40">both</span> sync and async business logic execution</li>
+            <li>Easy sockets state management</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>EventMachine</h3>
+
+<pre><code data-trim>
+module EchoServer
+  def post_init
+    puts "-- someone connected to the echo server!"
+  end
+
+  def receive_data(data)
+    send_data data
+  end
+end
+
+EventMachine.run do
+  EventMachine.start_server "127.0.0.1", 8081, EchoServer
+end
+</code></pre>
+        </section>
+
+        <section>
+          <h3>Client</h3>
+
+          <p>
+            You will have to wrap the socket by yourself with a lot of magic for timeouts and settings:
+          </p>
+
+<pre><code data-trim>
+setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
+setsockopt(Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, val)
+setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPIDLE, value)
+setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPINTVL, value)
+setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPCNT, value)
+</code></pre>
+        </section>
+
+        <section>
+          <h3>Client</h3>
+
+          <p>
+            You will have to wrap the socket by yourself with a lot of magic for timeouts and settings:
+          </p>
+
+<pre><code data-trim>
+unless IO.select([socket], nil, nil, config.wait_timeout)
+  raise(
+    Errors::TimeoutError,
+    config.wait_timeout
+  )
+end
+</code></pre>
+        </section>
+
+        <section>
+          <h3>Nagle's algorithm - your worse nightmare</h3>
+
+          <blockquote>
+            Nagle's algorithm is a means of improving the efficiency of TCP/IP networks by reducing the number of packets that need to be sent over the network.
+          </blockquote>
+        </section>
+
+        <section>
+          <h3>Nagle's algorithm - your worse nightmare</h3>
+
+          <img src="img/nagle.png"  style="border: 2px; height: auto"/>
+
+          <small>Image source: <a href="http://www.davidromerotrejo.com/2016/09/nagles-algorithm.html?m=1">Nagle's Algorithm</a></small>
+        </section>
+
+        <section>
+          <h3>Nagle's algorithm - your worse nightmare</h3>
+
+<pre><code data-trim>
+setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
+</code></pre>
+        </section>
+
+        <section>
+          <h3>Performance</h3>
+
+          <img src="img/dd1.png"  style="border: 2px; height: auto"/>
+          <img src="img/dd2.png"  style="border: 2px; height: auto"/>
+        </section>
+
+        <section>
+          <h3>Performance</h3>
+
+          <img src="img/dd3.png" style="border: 2px; height: auto"/>
+          <img src="img/dd4.png" style="border: 2px; height: auto"/>
+        </section>
+
+        <section>
+          <h1>Problems</h1>
+        </section>
+
+        <section>
+          <h3>Problems you won't bypass</h3>
+
+          <ul>
+            <li>DNS resolving performance</li>
+            <li>Network overhead</li>
+            <li>Random CPU spikes</li>
+            <li>Linux kernel schedulers</li>
+            <li>Processes priorities</li>
+            <li>Randomness</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Hitting the production</h2>
+
+          <p>
+            So, you've built yourself a nice server and a client
+          </p>
+
+          <ul>
+            <li class="fragment">Works locally</li>
+            <li class="fragment">Works for staging</li>
+            <li class="fragment">Timeouts and recovery works like a charm</li>
+            <li class="fragment">Obeys all the performance limits</li>
+          </ul>
+
+          <p class="fragment">
+            you deploy it and...
+          </p>
+        </section>
+
+        <section>
+          <h2>Hitting the production</h2>
+
+          <p>
+            Everything works until a certain Saturday...
+          </p>
+
+          <img class="fragment" src="img/boom.png"  style="width: 60%;"/>
+        </section>
+
+        <section>
+          <img src="img/boom1.png"  style="width: 60%;"/>
+          <img src="img/boom2.png"  style="width: 60%;"/>
+        </section>
+
+        <section>
+          <img src="img/boom3.png"  style="width: 60%;"/>
+          <img src="img/boom4.png"  style="width: 60%;"/>
+        </section>
+
+        <section>
+          <h2>Unexpected Ruby behaviours</h2>
+
+          <h3>
+            This problem actually affects
+            <span style="color: #BC2C40">any</span>
+            TCP based Ruby code.
+          </h3>
+
+          <h3>That means, that it will apply to your HTTP applications as well</h3>
+        </section>
+
+        <section>
+          <h2>Ruby is not the best with networking</h2>
+          <h3>
+            If you set a timeout to <span style="color: #BC2C40">50ms</span>,
+            you would expect it to stop after <span style="color: #BC2C40">50ms</span>, right?
+          </h3>
+          <h3>Well...</h3>
+          <h3>
+            <span style="color: #BC2C40">It doesn't</span>
+          </h3>
+        </section>
+
+        <section>
+          <h2>Unexpected Ruby behaviours</h2>
+          <h2>Let's do <span style="color: #BC2C40">Ruby</span>!</h2>
+        </section>
+
+        <section>
+<pre><code data-trim>
+Addrinfo.foreach(host, port, nil, :STREAM) {|ai|
+  # Not important stuff here...
+  begin
+    sock = local_addr ?
+      ai.connect_from(local_addr, timeout: connect_timeout) :
+      ai.connect(timeout: connect_timeout)
+  rescue SystemCallError
+    last_error = $!
+    next
+  end
+  ret = sock
+  break
+}
+</code></pre>
+        </section>
+
+        <section>
+          <h2>Unexpected Ruby behaviours</h2>
+
+          <p>
+            If you combine it with a LB that during server downtime holds the connection
+            half-open, you end up with a <span style="color: #BC2C40">timeout</span> multiplication
+            when everything behind is down.
+          </p>
+
+          <p>
+            In our case, that meant slowing system down <span style="color: #BC2C40">5 times</span> causing serious problems.
+          </p>
+        </section>
+
+        <section>
+          <h2>Unexpected Ruby behaviours</h2>
+
+          <h3>Can it be fixed?</h3>
+
+          <h3>
+            <span style="color: #BC2C40">Yes</span>, but...
+          </h3>
+
+          <p class="fragment">
+            It's been <span style="color: #BC2C40">2 months</span> since I've reported that issue and no one is willing
+            to even tell me, whether my fix is valid in the way it works.
+          </p>
+
+          <p class="fragment">
+            The issue remained unreplied...
+          </p>
+        </section>
+
+        <section>
+          <h2>Unexpected Ruby behaviours</h2>
+          <h2>Until <span style="color: #BC2C40">now</span>!</h2>
+
+          <img src="img/aaron.jpg" />
+        </section>
+
+
+        <section>
+          <h2>Making things even better</h2>
+
+          <img src="img/long.png" style="border: 0; height: auto"/>
+        </section>
+
+        <section>
+          <h3>Making things even better</h3>
+
+          <img src="img/short.png" />
+        </section>
+
+        <section>
+          <h3><span style="color: #BC2C40">Asynchronous</span> is back!</h3>
+        </section>
+
+        <section>
+          <h3><span style="color: #BC2C40">Asynchronous</span> is back!</h3>
+
+          <ul>
+            <li>You can achieve multi-process parallel execution that way</li>
+            <li>IO operations aren't GILed</li>
+            <li>You can embrace SLAs and minimize the risk of extreme slowness of the whole system</li>
+            <li>< 5ms performance is achievable because it's not needed</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>How?</h2>
+
+          <h2><span style="color: #BC2C40">EventMachine</span></h2>
+
+          <p>+ asynchronous libraries almost the same way as the sync once</p>
+        </section>
+
+        <section>
+          <h2>Things you will have to deal with</h2>
+
+          <ul>
+            <li>All the sync problems</li>
+            <li>Plus partial data in the sockets (both ways)</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Isolate</h2>
+          <h2>Play</h2>
+          <h2>Experiment</h2>
+          <h2>Monitor</h2>
+        </section>
+
+        <section>
+          <h2>THE END</h2>
+
+          <ul style="text-align: center; list-style: none;">
+            <li>www: <a href="https://github.com/karafka">github.com/karafka</a></li>
+            <li>email: <a href="mailto:maciej@mensfeld.pl">maciej@mensfeld.pl</a></li>
+            <li>twitter: <a href="http://twitter.com/maciejmensfeld">@maciejmensfeld</a></li>
+          </ul>
+        </section>
+			</div>
+
+		  <div class='logo'>
+        <img src="img/logo.png" style="background: none; border: none; box-shadow: 0 0 0 0 #fff; width: 40%;"/>
+		  </div>
+
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+        history: true,
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>
